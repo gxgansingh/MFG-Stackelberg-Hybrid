@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Experiment outputs
+outputs/
+outputs/network1/raw/
+outputs/network1/statistics/
+outputs/network1/figures/
+outputs/network1/report/
+
+# Logs
+*.log
+*.tmp
