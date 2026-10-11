@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 OUTPUT_ROOT = PROJECT_ROOT / "outputs" / "network1"
 
@@ -21,10 +20,29 @@ PRIORITY_PROFILES = (
 
 LOADS = (1250, 2500, 5000)
 TICKS = 1250
+
 MFG_MAX_ITERATIONS = 80
 MFG_TOLERANCE = 1e-4
 
-NETWORK = {"server_count": 5, "nodes_per_server": 10}
+# N1 preserves the existing topology.
+# N2 and N3 are provisional scaling configurations.
+NETWORKS = {
+    "N1": {
+        "server_count": 5,
+        "nodes_per_server": 10,
+    },
+    "N2": {
+        "server_count": 15,
+        "nodes_per_server": 10,
+    },
+    "N3": {
+        "server_count": 30,
+        "nodes_per_server": 10,
+    },
+}
+
+# Backwards compatibility for existing experiments.
+NETWORK = NETWORKS["N1"]
 
 MFG_UTILITY_WEIGHTS = {
     "priority": 0.30,
