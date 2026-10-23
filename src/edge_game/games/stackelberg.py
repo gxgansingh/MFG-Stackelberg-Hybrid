@@ -1,96 +1,85 @@
-from dataclasses import dataclass
+"""
+Stackelberg leader-follower game module.
+Edge servers act as leaders determining optimal pricing strategies,
+while edge workloads act as followers reacting to price signals.
+"""
+
+from typing import Dict, List
+import numpy as np
+from src.edge_game.entities.edge_node import EdgeNode
+from src.edge_game.entities.edge_server import EdgeServer
+from src.edge_game.entities.task import Task
 
 
-@dataclass(frozen=True)
-class StackelbergDecision:
-    server_id: str
-    follower_node_id: str
-    leader_cost: float
-    follower_cost: float
-    stackelberg_gap: float
-    margin: float
-    best_alternative_cost: float
+class StackelbergGameSolver:
+    """Solves the Stackelberg leader-follower pricing equilibrium."""
 
+    def __init__(self, price_step: float = 0.10) -> None:
+        self.price_step = price_step
 
-class StackelbergGame:
-    def __init__(self, server_penalty_weight: float = 0.35):
-        self.server_penalty_weight = server_penalty_weight
+    def optimize_leader_prices(
+        self,
+        servers: List[EdgeServer],
+        nodes: List[EdgeNode],
+        tasks: List[Task],
+    ) -> Dict[int, float]:
+        """
+        Compute optimal leader pricing for each edge server to maximize revenue
+        while preventing follower congestion overflow.
+        """
+        node_map = {n.node_id: n for n in nodes}
+        updated_prices: Dict[int, float] = {}
 
-    def leader_cost(self, server, mfg_decision) -> float:
-        return (
-            0.60 * server.aggregate_load()
-            + 0.20 * (server.network_latency_ms / 100.0)
-            + 0.20
-            * self.server_penalty_weight
-            * mfg_decision.cost
-        )
+        for server in servers:
+            cluster_nodes = [node_map[nid] for nid in server.node_ids if nid in node_map]
+            if not cluster_nodes:
+                updated_prices[server.server_id] = server.unit_price
+                continue
 
-    def choose_server(self, task, server_decisions):
-        if not server_decisions:
-            raise ValueError(
-                "Stackelberg received no feasible server decisions."
-            )
+            mean_util = float(np.mean([n.cpu_utilization for n in cluster_nodes]))
+            
+            # Stackelberg best-response price adjustment rule
+            target_price = server.unit_price * (1.0 + 0.35 * (mean_util - 0.70))
+            clamped_price = float(min(max(target_price, server.min_price), server.max_price))
+            server.unit_price = clamped_price
+            updated_prices[server.server_id] = clamped_price
 
-        ranked = []
+        return updated_prices
 
-        for (
-            server_id,
-            mfg_decision,
-            nash_diag,
-            server,
-        ) in server_decisions:
+    def verify_stackelberg_gap(
+        self,
+        servers: List[EdgeServer],
+        nodes: List[EdgeNode],
+        tasks: List[Task],
+        current_prices: Dict[int, float],
+    ) -> float:
+        """
+        Independently verify the Stackelberg Gap.
+        Evaluates the leader's utility under current prices vs. best-response audited prices.
+        """
+        if not servers or not tasks:
+            return 0.0
 
-            leader_cost = self.leader_cost(
-                server,
-                mfg_decision,
-            )
+        node_map = {n.node_id: n for n in nodes}
+        current_revenue = 0.0
 
-            ranked.append(
-                (
-                    leader_cost,
-                    server_id,
-                    mfg_decision,
-                    server,
-                )
-            )
+        for server in servers:
+            p = current_prices.get(server.server_id, server.unit_price)
+            cluster_nodes = [node_map[nid] for nid in server.node_ids if nid in node_map]
+            cluster_load = sum(n.cpu_allocated for n in cluster_nodes)
+            current_revenue += p * cluster_load
 
-        ranked.sort(
-            key=lambda item: (
-                item[0],
-                item[1],
-            )
-        )
+        # Audit candidate price perturbations for leader optimality gap
+        best_audited_revenue = current_revenue
+        for delta in [-0.3, -0.15, 0.15, 0.3]:
+            audited_revenue = 0.0
+            for server in servers:
+                p_cand = max(server.min_price, min(server.max_price, current_prices.get(server.server_id, 1.0) + delta))
+                cluster_nodes = [node_map[nid] for nid in server.node_ids if nid in node_map]
+                cluster_load = sum(n.cpu_allocated for n in cluster_nodes)
+                audited_revenue += p_cand * cluster_load
+            if audited_revenue > best_audited_revenue:
+                best_audited_revenue = audited_revenue
 
-        leader_cost, server_id, mfg_decision, _ = ranked[0]
-
-        second_cost = (
-            ranked[1][0]
-            if len(ranked) > 1
-            else leader_cost
-        )
-
-        margin = max(
-            0.0,
-            second_cost - leader_cost,
-        )
-
-        best_alternative_cost = (
-            second_cost
-            if len(ranked) > 1
-            else leader_cost
-        )
-
-        stackelberg_gap = max(
-            0.0,
-            leader_cost - best_alternative_cost,
-        )
-
-        return StackelbergDecision(
-            server_id=server_id,
-            follower_node_id=mfg_decision.node_id,
-            leader_cost=leader_cost,
-            follower_cost=mfg_decision.cost,
-            stackelberg_gap=stackelberg_gap,
-            margin=margin,
-            best_alternative_cost=best_alternative_cost,
-        )
+        gap = max(0.0, (best_audited_revenue - current_revenue) / max(abs(best_audited_revenue), 1.0))
+        return float(gap)
