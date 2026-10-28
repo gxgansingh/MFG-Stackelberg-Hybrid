@@ -1,192 +1,152 @@
-from time import perf_counter
+"""
+End-to-end simulation engine for executing single and replicated IoT edge
+load-balancing experiments across networks, workloads, profiles, and ablation methods.
+"""
 
-from ..filtering.filtering_audit import build_filtering_record
-from ..filtering.resource_filter import ResourceFilter
-from ..games.hierarchical_game import HierarchicalGame
-from .metrics import compute_run_metrics, safe_utility
+from dataclasses import dataclass
+from typing import Dict
+import numpy as np
+
+from config.experiment_config import NETWORKS, NetworkConfig
+from src.edge_game.filtering.resource_filter import ResourceFilter
+from src.edge_game.games.hierarchical_game import HierarchicalGameEngine
+from src.edge_game.simulation.metrics import SimulationMetrics, compute_system_metrics
+from src.edge_game.workload.generator import generate_network_topology, generate_workload
+from src.edge_game.workload.priority import format_priority_distribution
+
+
+@dataclass
+class ExperimentTrialResult:
+    """Complete record of a single simulation trial."""
+    network_code: str
+    num_nodes: int
+    num_servers: int
+    workload_size: int
+    task_profile: str
+    method: str
+    seed: int
+    priority_counts: Dict[str, int]
+    priority_distribution_str: str
+    mean_feasible_nodes: float
+    metrics: SimulationMetrics
+
+    def to_flat_record(self, run_id: int = 1) -> Dict[str, float | int | str]:
+        """Return a flat dictionary suitable for pandas DataFrame construction."""
+        record: Dict[str, float | int | str] = {
+            "network": self.network_code,
+            "num_nodes": self.num_nodes,
+            "num_servers": self.num_servers,
+            "workload": self.workload_size,
+            "profile": self.task_profile,
+            "method": self.method,
+            "run_id": run_id,
+            "seed": self.seed,
+            "P1_count": self.priority_counts.get("P1", 0),
+            "P2_count": self.priority_counts.get("P2", 0),
+            "P3_count": self.priority_counts.get("P3", 0),
+            "P4_count": self.priority_counts.get("P4", 0),
+            "priority_distribution": self.priority_distribution_str,
+            "mean_feasible_nodes": self.mean_feasible_nodes,
+        }
+        record.update(self.metrics.to_dict())
+        return record
 
 
 class SimulationEngine:
-    def __init__(
+    """Executes complete simulation trials for Phase-1 and Phase-2 experiments."""
+
+    def __init__(self, net_config: NetworkConfig) -> None:
+        self.net_config = net_config
+        self.resource_filter = ResourceFilter(net_config)
+
+    def run_trial(
         self,
-        environment,
-        policy_variant="PROPOSED",
-    ):
-        self.environment = environment
-        self.filter = ResourceFilter()
-        self.game = HierarchicalGame(
-            policy_variant=policy_variant
-        )
-        self.policy_variant = policy_variant
+        workload_size: int,
+        task_profile: str,
+        method: str = "Proposed",
+        seed: int = 2026,
+    ) -> ExperimentTrialResult:
+        """
+        Run a single reproducible simulation trial for the specified workload,
+        task profile (T1, T2, or T3), and ablation method (A1, A2, A3, or Proposed).
+        """
+        rng = np.random.default_rng(seed)
 
-    def run(self, tasks, duration_ticks):
-        records = []
-        filtering_records = []
-        start = perf_counter()
-
-        for task in tasks:
-            feasible_by_server = {}
-
-            # Filter nodes before running the allocation game.
-            for server in self.environment.servers:
-                feasible_nodes = []
-
-                for node in server.nodes:
-                    result = self.filter.evaluate(
-                        task,
-                        node,
-                    )
-
-                    filtering_records.append(
-                        build_filtering_record(
-                            task,
-                            node,
-                            result,
-                        )
-                    )
-
-                    if result.feasible:
-                        feasible_nodes.append(node)
-
-                if feasible_nodes:
-                    feasible_by_server[server.server_id] = (
-                        feasible_nodes
-                    )
-
-            # Skip tasks for which no node is feasible.
-            if not feasible_by_server:
-                continue
-
-            # Measure allocation overhead separately from the
-            # MFG convergence time reported by the game.
-            allocation_start = perf_counter()
-
-            decision = self.game.allocate(
-                task,
-                self.environment.servers,
-                feasible_by_server,
-            )
-
-            allocation_time = (
-                perf_counter() - allocation_start
-            )
-
-            server = next(
-                server
-                for server in self.environment.servers
-                if server.server_id == decision.server_id
-            )
-
-            node = next(
-                node
-                for node in server.nodes
-                if node.node_id == decision.node_id
-            )
-
-            response_time = (
-                server.network_latency_ms
-                + node.latency_ms
-                + 4.0 * (1.0 + node.queue_pressure)
-            )
-
-            utility = safe_utility(
-                task,
-                node,
-                decision,
-            )
-
-            # Apply the selected allocation to the environment.
-            self.environment.apply_allocation(
-                task,
-                decision.server_id,
-                decision.node_id,
-            )
-
-            records.append(
-                {
-                    "task_id": task.task_id,
-                    "priority_profile": task.priority_profile,
-                    "priority_class": task.priority_label,
-                    "priority_score": task.priority_score,
-                    "policy_variant": self.policy_variant,
-
-                    "server_id": decision.server_id,
-                    "node_id": decision.node_id,
-
-                    "utility": utility,
-                    "node_state": decision.mfg_state,
-                    "mfg_control": decision.mfg_control,
-                    "mfg_cost": decision.mfg_cost,
-                    "mfg_iterations": decision.mfg_iterations,
-
-                    "allocation_time_seconds": allocation_time,
-
-                    "mfg_convergence_time_seconds": (
-                        decision.mfg_convergence_time_seconds
-                    ),
-
-                    "nash_gap": decision.nash_gap,
-                    "nash_best_response_cost": (
-                        decision.nash_best_response_cost
-                    ),
-                    "nash_selected_cost": (
-                        decision.nash_selected_cost
-                    ),
-                    "nash_best_alternative_cost": (
-                        decision.nash_best_alternative_cost
-                    ),
-                    "nash_deviation_margin": (
-                        decision.nash_deviation_margin
-                    ),
-
-                    "stackelberg_gap": (
-                        decision.stackelberg_gap
-                    ),
-                    "stackelberg_margin": (
-                        decision.stackelberg_margin
-                    ),
-                    "stackelberg_leader_cost": (
-                        decision.stackelberg_leader_cost
-                    ),
-                    "stackelberg_best_alternative_cost": (
-                        decision.stackelberg_best_alternative_cost
-                    ),
-                    "stackelberg_deviation_margin": (
-                        decision.stackelberg_deviation_margin
-                    ),
-
-                    "response_time_ms": response_time,
-                    "completed": 1,
-                }
-            )
-
-        if not records:
-            raise ValueError(
-                "No tasks were allocated. Check the workload, "
-                "resource constraints, and filtering configuration."
-            )
-
-        # Include all nodes, not just nodes that received tasks.
-        all_nodes = [
-            node
-            for server in self.environment.servers
-            for node in server.nodes
-        ]
-
-        metrics = compute_run_metrics(
-            records,
-            duration_ticks,
-            all_nodes=all_nodes,
+        # 1. Generate edge network topology and initial background state
+        nodes, servers = generate_network_topology(
+            net_config=self.net_config,
+            rng=rng,
+            initial_load_factor=0.35,
         )
 
-        metrics["wall_clock_seconds"] = (
-            perf_counter() - start
+        # 2. Generate task workload and classify each task into P1, P2, P3, or P4
+        tasks, priority_counts = generate_workload(
+            num_tasks=workload_size,
+            profile=task_profile,
+            rng=rng,
+        )
+        dist_str = format_priority_distribution(priority_counts, workload_size)
+
+        # 3. Audit pre-allocation dynamic feasible node count under the 7 filtering criteria
+        audit_stats = self.resource_filter.audit_batch_filtering(
+            nodes=nodes,
+            tasks=tasks,
+            max_sample_tasks=100,
+        )
+        mean_feasible_nodes = float(audit_stats["mean_feasible_nodes"])
+
+        # 4. Execute game-theoretic coordination and task execution
+        game_engine = HierarchicalGameEngine(
+            method=method,
+            resource_filter=self.resource_filter,
+        )
+        outcome = game_engine.execute_coordination(
+            nodes=nodes,
+            servers=servers,
+            tasks=tasks,
+            rng=rng,
         )
 
-        metrics["policy_variant"] = self.policy_variant
-
-        return (
-            metrics,
-            records,
-            filtering_records,
+        # 5. Compute system performance and equilibrium gap metrics
+        sim_metrics = compute_system_metrics(
+            nodes=nodes,
+            servers=servers,
+            tasks=tasks,
+            server_prices=outcome.server_prices,
+            convergence_time_ms=outcome.convergence_time_ms,
+            nash_gap=outcome.nash_gap,
+            stackelberg_gap=outcome.stackelberg_gap,
         )
+
+        return ExperimentTrialResult(
+            network_code=self.net_config.code,
+            num_nodes=self.net_config.num_nodes,
+            num_servers=self.net_config.num_servers,
+            workload_size=workload_size,
+            task_profile=task_profile,
+            method=method,
+            seed=seed,
+            priority_counts=priority_counts,
+            priority_distribution_str=dist_str,
+            mean_feasible_nodes=mean_feasible_nodes,
+            metrics=sim_metrics,
+        )
+
+
+def run_single_configuration(
+    network_code: str,
+    workload_size: int,
+    task_profile: str,
+    method: str = "Proposed",
+    seed: int = 2026,
+) -> ExperimentTrialResult:
+    """Convenience helper to run a single configuration by network code ('N1', 'N2', 'N3')."""
+    if network_code not in NETWORKS:
+        raise ValueError(f"Unknown network code '{network_code}'. Expected one of {list(NETWORKS)}.")
+    engine = SimulationEngine(NETWORKS[network_code])
+    return engine.run_trial(
+        workload_size=workload_size,
+        task_profile=task_profile,
+        method=method,
+        seed=seed,
+    )
