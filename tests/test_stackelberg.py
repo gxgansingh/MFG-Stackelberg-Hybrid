@@ -1,13 +1,39 @@
-from src.edge_game.entities.edge_server import EdgeServer
-from src.edge_game.games.nash_mfg import MFGDecision, NashDiagnostics
-from src.edge_game.games.stackelberg import StackelbergGame
+"""
+Unit tests for the Stackelberg leader-follower pricing solver and Stackelberg gap verification.
+"""
+
+import numpy as np
+from config.experiment_config import NETWORKS
+from src.edge_game.games.stackelberg import StackelbergGameSolver
+from src.edge_game.workload.generator import generate_network_topology, generate_workload
 
 
-def test_stackelberg_selects_best_leader_cost():
-    servers = [EdgeServer("S1", [], 5), EdgeServer("S2", [], 20)]
-    decisions = [
-        ("S1", MFGDecision("S1-N1", "S1", 0.2, 0.8, 0.2, 0.1, 1, 1), NashDiagnostics(True, 1, 0, 0, 0), servers[0]),
-        ("S2", MFGDecision("S2-N1", "S2", 0.2, 0.8, 0.2, 0.1, 1, 1), NashDiagnostics(True, 1, 0, 0, 0), servers[1]),
-    ]
-    decision = StackelbergGame().choose_server(None, decisions)
-    assert decision.server_id == "S1"
+def test_stackelberg_solver_respects_price_bounds_and_verifies_gap() -> None:
+    """Verify leader prices remain within [min_price, max_price] and Stackelberg gap is valid."""
+    rng = np.random.default_rng(2026)
+    net_cfg = NETWORKS["N1"]
+    nodes, servers = generate_network_topology(net_cfg, rng)
+    tasks, _ = generate_workload(num_tasks=150, profile="T1", rng=rng)
+
+    solver = StackelbergGameSolver(num_price_candidates=25)
+    prices, elapsed_ms = solver.optimize_leader_prices(
+        servers=servers,
+        nodes=nodes,
+        tasks=tasks,
+        priority_aware=True,
+    )
+
+    assert len(prices) == len(servers)
+    assert elapsed_ms > 0.0
+    for server in servers:
+        p = prices[server.server_id]
+        assert server.min_price <= p <= server.max_price
+
+    stack_gap = solver.verify_stackelberg_gap(
+        servers=servers,
+        nodes=nodes,
+        tasks=tasks,
+        current_prices=prices,
+    )
+    assert not np.isnan(stack_gap)
+    assert 0.0 <= stack_gap < 0.10
