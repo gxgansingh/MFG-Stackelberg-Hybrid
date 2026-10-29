@@ -59,6 +59,7 @@ class HierarchicalGameEngine:
         node_map = {n.node_id: n for n in nodes}
         server_prices = {s.server_id: s.unit_price for s in servers}
         is_priority_aware = self.method == "Proposed"
+        has_stackelberg = self.method in ["A2: Stackelberg only", "A3: MFG+Stackelberg", "Proposed"]
 
         # Order tasks by priority score for the Proposed priority-aware method
         if is_priority_aware:
@@ -73,7 +74,7 @@ class HierarchicalGameEngine:
         total_conv_ms = 0.0
 
         # 1. Stackelberg Leader Pricing Phase (Active for A2, A3, Proposed)
-        if self.method in ["A2: Stackelberg only", "A3: MFG+Stackelberg", "Proposed"]:
+        if has_stackelberg:
             server_prices, stack_ms = self.stackelberg_solver.optimize_leader_prices(
                 servers=servers,
                 nodes=nodes,
@@ -91,15 +92,21 @@ class HierarchicalGameEngine:
                 server_prices=server_prices,
                 resource_filter=active_filter,
                 priority_aware=is_priority_aware,
+                use_stackelberg_prices=has_stackelberg,
                 rng=rng,
             )
             total_conv_ms += mfg_ms
         elif self.method == "A2: Stackelberg only":
-            # Price-proportional cluster assignment without intra-node MFG smoothing
+            # Server-price guided assignment without intra-node MFG congestion balancing
             allocations = {}
-            for idx, task in enumerate(ordered_tasks):
-                chosen_node = nodes[idx % len(nodes)]
-                allocations[task.task_id] = chosen_node.node_id
+            price_weights = np.array(
+                [1.0 / max(server_prices.get(n.server_id, 1.0), 0.25) for n in nodes],
+                dtype=float,
+            )
+            price_probs = price_weights / np.sum(price_weights)
+            for task in ordered_tasks:
+                chosen_idx = int(rng.choice(len(nodes), p=price_probs))
+                allocations[task.task_id] = nodes[chosen_idx].node_id
             total_conv_ms += len(ordered_tasks) * 0.008 + len(nodes) * 0.09
         else:
             raise ValueError(f"Unsupported ablation method: '{self.method}'")
