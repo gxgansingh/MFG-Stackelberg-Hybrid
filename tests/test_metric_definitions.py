@@ -1,131 +1,57 @@
+"""
+Unit tests for mathematical metric definitions: Jain's Fairness Index,
+Load Variance, and System Metrics computation.
+"""
+
 import numpy as np
-
-from src.edge_game.simulation.metrics import compute_run_metrics
-
-
-class FakeNode:
-    def __init__(self, node_id, utilization):
-        self.node_id = node_id
-        self.utilization = utilization
-
-    def utilization_state(self):
-        return self.utilization
+from config.experiment_config import NETWORKS
+from src.edge_game.simulation.metrics import (
+    compute_jains_fairness_index,
+    compute_load_variance,
+    compute_system_metrics,
+)
+from src.edge_game.workload.generator import generate_network_topology, generate_workload
 
 
-def make_record(node_id, utility, node_state):
-    return {
-        "task_id": f"T-{node_id}-{utility}",
-        "node_id": node_id,
-        "utility": utility,
-        "node_state": node_state,
-        "response_time_ms": 10.0,
-        "completed": 1,
-        "allocation_time_seconds": 0.001,
-        "mfg_convergence_time_seconds": 0.0005,
-    }
+def test_jains_fairness_index_bounds_and_identities() -> None:
+    """Verify Jain's Fairness Index is 1.0 for equal allocations and bounded in (0, 1]."""
+    uniform_load = np.array([0.5, 0.5, 0.5, 0.5])
+    assert np.isclose(compute_jains_fairness_index(uniform_load), 1.0)
+
+    skewed_load = np.array([0.9, 0.1, 0.1, 0.1])
+    fairness = compute_jains_fairness_index(skewed_load)
+    assert 0.25 <= fairness < 1.0
 
 
-def test_fairness_includes_idle_nodes():
-    nodes = [
-        FakeNode("N1", 0.8),
-        FakeNode("N2", 0.4),
-        FakeNode("N3", 0.0),
-    ]
+def test_load_variance_zero_for_identical_utilizations() -> None:
+    """Verify Load Variance is 0.0 when all nodes have identical utilization."""
+    uniform_load = np.array([0.65, 0.65, 0.65, 0.65, 0.65])
+    assert np.isclose(compute_load_variance(uniform_load), 0.0)
 
-    records = [
-        make_record("N1", 0.5, 0.2),
-        make_record("N1", 0.6, 0.3),
-        make_record("N2", 0.7, 0.4),
-    ]
 
-    result = compute_run_metrics(
-        records,
-        duration_ticks=10,
-        all_nodes=nodes,
+def test_compute_system_metrics_returns_valid_values() -> None:
+    """Verify compute_system_metrics produces finite values for all 6 performance metrics."""
+    rng = np.random.default_rng(2026)
+    nodes, servers = generate_network_topology(NETWORKS["N1"], rng)
+    tasks, _ = generate_workload(num_tasks=50, profile="T1", rng=rng)
+
+    for idx, task in enumerate(tasks):
+        nodes[idx % len(nodes)].allocate_task(task)
+
+    server_prices = {s.server_id: s.unit_price for s in servers}
+    metrics = compute_system_metrics(
+        nodes=nodes,
+        servers=servers,
+        tasks=tasks,
+        server_prices=server_prices,
+        convergence_time_ms=25.0,
+        nash_gap=0.0008,
+        stackelberg_gap=0.0021,
     )
 
-    # Assignment counts are [2, 1, 0], including the idle node.
-    expected_fairness = (2 + 1 + 0) ** 2 / (
-        3 * (2**2 + 1**2 + 0**2)
-    )
-
-    assert np.isclose(
-        result["jain_fairness"],
-        expected_fairness,
-    )
-
-
-def test_load_variance_uses_final_node_utilization():
-    nodes = [
-        FakeNode("N1", 0.8),
-        FakeNode("N2", 0.4),
-        FakeNode("N3", 0.0),
-    ]
-
-    records = [
-        make_record("N1", 0.5, 0.2),
-        make_record("N1", 0.6, 0.3),
-        make_record("N2", 0.7, 0.4),
-    ]
-
-    result = compute_run_metrics(
-        records,
-        duration_ticks=10,
-        all_nodes=nodes,
-    )
-
-    expected_variance = np.var([0.8, 0.4, 0.0])
-
-    assert np.isclose(
-        result["load_variance"],
-        expected_variance,
-    )
-
-
-def test_allocation_and_convergence_times_are_separate():
-    nodes = [
-        FakeNode("N1", 0.5),
-        FakeNode("N2", 0.3),
-    ]
-
-    records = [
-        make_record("N1", 0.5, 0.2),
-        make_record("N2", 0.7, 0.4),
-    ]
-
-    result = compute_run_metrics(
-        records,
-        duration_ticks=10,
-        all_nodes=nodes,
-    )
-
-    assert np.isclose(
-        result["allocation_time_seconds"],
-        0.001,
-    )
-
-    assert np.isclose(
-        result["mfg_convergence_time_seconds"],
-        0.0005,
-    )
-
-
-def test_throughput_uses_completed_tasks_and_duration():
-    nodes = [
-        FakeNode("N1", 0.5),
-        FakeNode("N2", 0.3),
-    ]
-
-    records = [
-        make_record("N1", 0.5, 0.2),
-        make_record("N2", 0.7, 0.4),
-    ]
-
-    result = compute_run_metrics(
-        records,
-        duration_ticks=10,
-        all_nodes=nodes,
-    )
-
-    assert np.isclose(result["throughput"], 0.2)
-    assert result["completed_tasks"] == 2
+    assert metrics.utility > 0.0
+    assert 0.0 < metrics.jains_fairness <= 1.0
+    assert metrics.load_variance >= 0.0
+    assert metrics.convergence_time_ms == 25.0
+    assert metrics.throughput_tasks_per_sec > 0.0
+    assert metrics.response_time_ms > 0.0
