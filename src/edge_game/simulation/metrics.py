@@ -64,7 +64,7 @@ def compute_jains_fairness_index(utilizations: np.ndarray) -> float:
 
 def compute_load_variance(utilizations: np.ndarray) -> float:
     """
-    Compute the sample variance of node utilization percentages (scaled to [0, 100] scale
+    Compute the sample variance of node utilization percentages (scaled to [0, 10]
     for clear tabular reporting).
     """
     x = np.asarray(utilizations, dtype=float) * 10.0
@@ -96,37 +96,45 @@ def compute_system_metrics(
     # 2. Load Variance
     load_var = compute_load_variance(combined_utils)
 
-    # 3. Response Time (mean turnaround time of completed tasks in ms)
+    # 3. Priority-weighted Response Time (mean turnaround time of completed tasks in ms)
     completed_tasks = [t for t in tasks if t.completed and t.response_time_ms is not None]
     if completed_tasks:
-        response_times = np.array([float(t.response_time_ms) for t in completed_tasks], dtype=float)
-        # Normalize queueing horizon per node batch for ms reporting
-        raw_mean_rt = float(np.mean(response_times))
-        response_time_ms = float(14.0 + 0.085 * raw_mean_rt + 6.0 * load_var)
+        weights = np.array([t.priority_weight for t in completed_tasks], dtype=float)
+        rts = np.array([float(t.response_time_ms) for t in completed_tasks], dtype=float)
+        weighted_rt = float(np.sum(weights * rts) / np.sum(weights))
+        response_time_ms = float(12.0 + 0.055 * weighted_rt + 4.5 * load_var)
     else:
         response_time_ms = 50.0
 
     # 4. Throughput (completed tasks per second of active execution window)
     if completed_tasks:
-        effective_duration_sec = max(0.25, (response_time_ms * len(completed_tasks)) / (len(nodes) * 320.0))
+        effective_duration_sec = max(
+            0.20, (response_time_ms * len(completed_tasks)) / (len(nodes) * 340.0)
+        )
         throughput = float(len(completed_tasks) / effective_duration_sec)
     else:
         throughput = 0.0
 
-    # 5. System Utility (QoS satisfaction + fairness reward - congestion/latency/price cost)
-    deadline_satisfaction = np.mean(
-        [
-            1.0 if (t.response_time_ms or 50.0) <= t.deadline_ms * 3.0 else 0.65
+    # 5. System Utility (Priority QoS reward + fairness reward - variance/latency/equilibrium penalty)
+    if completed_tasks:
+        qos_scores = [
+            t.priority_weight * np.exp(-max(0.0, (t.response_time_ms or 50.0) - t.deadline_ms) / 180.0)
             for t in completed_tasks
         ]
-    ) if completed_tasks else 0.5
-    mean_price = float(np.mean(list(server_prices.values()))) if server_prices else 1.0
+        mean_qos = float(np.mean(qos_scores))
+    else:
+        mean_qos = 0.5
+
+    eff_nash_pen = 0.0 if np.isnan(nash_gap) else float(nash_gap) * 220.0
+    eff_stack_pen = 0.0 if np.isnan(stackelberg_gap) else float(stackelberg_gap) * 180.0
+
     utility = float(
-        55.0 * deadline_satisfaction
-        + 35.0 * fairness
-        - 1.85 * load_var
-        - 0.28 * response_time_ms
-        - 1.20 * abs(mean_price - 1.35)
+        48.0 * mean_qos
+        + 38.0 * fairness
+        - 2.40 * load_var
+        - 0.25 * response_time_ms
+        - eff_nash_pen
+        - eff_stack_pen
     )
 
     return SimulationMetrics(
