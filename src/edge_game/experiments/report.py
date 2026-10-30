@@ -97,7 +97,7 @@ def generate_markdown_and_html_reports(
 
     # -------------------- 1. BUILD MARKDOWN REPORT --------------------
     md_lines: List[str] = [
-        "# Intra-Node Load Balancing for IoT Edge Computing Using Non-Cooperative Game Theory",
+        "# Experimental Report",
         "",
         "## 1. System Architecture & How the Framework Works",
         "",
@@ -350,7 +350,7 @@ def generate_markdown_and_html_reports(
         css_style,
         "</head>",
         "<body>",
-        "<h1>Intra-Node Load Balancing for IoT Edge Computing Using Non-Cooperative Game Theory</h1>",
+        "<h1>Experimental Report</h1>",
         "<h2>1. System Architecture &amp; How the Framework Works</h2>",
         "<div class='card'>",
         "<p>This framework models a three-tier IoT Edge Computing architecture (IoT Task Generators, Follower Edge Nodes, and Leader Edge Servers) through five sequential stages:</p>",
