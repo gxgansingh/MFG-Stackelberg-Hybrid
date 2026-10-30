@@ -22,6 +22,7 @@ htmlcov/
 
 # Generated experiment results and raw CSV/PNG artifacts
 results/
+!results/figures/
 outputs/
 
 # IDE and OS files
