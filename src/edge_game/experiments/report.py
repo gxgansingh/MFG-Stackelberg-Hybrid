@@ -54,7 +54,7 @@ def generate_markdown_and_html_reports(
 
     # -------------------- 1. BUILD MARKDOWN REPORT --------------------
     md_lines: List[str] = [
-        "# Experimental Report: Intra-Node Load Balancing for IoT Edge Computing Using Non-Cooperative Game Theory",
+        "# Experimental Report",
         "",
         "## Phase-1: Network Configuration, Resource Filtering & 27 Experimental Configurations",
         "",
