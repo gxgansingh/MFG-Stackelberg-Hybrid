@@ -2,41 +2,49 @@
 <html lang='en'>
 <head>
 <meta charset='UTF-8'>
-<title>IoT Edge Game Theory Experimental Report</title>
+<title>IoT Edge Game Theory – Restructured Experimental Report</title>
 
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 40px auto;
-            max-width: 1280px;
-            line-height: 1.6;
+            margin: 36px auto;
+            max-width: 1320px;
+            line-height: 1.65;
             color: #1f2937;
-            background-color: #f9fafb;
-            padding: 0 20px;
+            background-color: #f8fafc;
+            padding: 0 24px;
         }
-        h1, h2, h3, h4 {
-            color: #111827;
+        h1, h2, h3 {
+            color: #0f172a;
         }
         h1 {
-            border-bottom: 3px solid #2563eb;
-            padding-bottom: 10px;
+            border-bottom: 3px solid #1d4ed8;
+            padding-bottom: 12px;
         }
         h2 {
-            margin-top: 36px;
-            border-bottom: 2px solid #e5e7eb;
+            margin-top: 40px;
+            border-bottom: 2px solid #cbd5e1;
             padding-bottom: 6px;
+        }
+        .card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px 24px;
+            margin: 18px 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
         table {
             border-collapse: collapse;
             width: 100%;
-            margin: 16px 0 28px 0;
+            margin: 14px 0 26px 0;
             background: #ffffff;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-            font-size: 14px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            font-size: 13.5px;
         }
         th, td {
-            border: 1px solid #d1d5db;
-            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            padding: 9px 11px;
             text-align: left;
         }
         th {
@@ -45,16 +53,16 @@
             font-weight: 600;
         }
         tr:nth-child(even) {
-            background-color: #f3f4f6;
+            background-color: #f1f5f9;
         }
         .figure-box {
             background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
             padding: 16px;
-            margin-bottom: 28px;
+            margin-bottom: 26px;
             text-align: center;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
         .figure-box img {
             max-width: 100%;
@@ -65,7 +73,18 @@
 </head>
 <body>
 <h1>Experimental Report</h1>
-<h2>Phase-1: Network Configuration, Resource Filtering &amp; 27 Experimental Configurations</h2>
+<h2>1. System Architecture &amp; How the Framework Works</h2>
+<div class='card'>
+<p>This framework models a three-tier IoT Edge Computing architecture (IoT Task Generators, Follower Edge Nodes, and Leader Edge Servers) through five sequential stages:</p>
+<ol>
+<li><strong>Topology &amp; Workload Generation (<code>generator.py</code>)</strong>: Instantiates <strong>Network-1</strong> (50 nodes, 5 servers), <strong>Network-2</strong> (150 nodes, 15 servers), and <strong>Network-3</strong> (300 nodes, 30 servers) under workloads of <strong>1,250</strong>, <strong>3,000</strong>, and <strong>5,000</strong> tasks across arrival profiles <strong>T1</strong> (urgent telemetry), <strong>T2</strong> (balanced mixed), and <strong>T3</strong> (compute-heavy).</li>
+<li><strong>Multi-Attribute Priority Scoring (<code>priority.py</code>)</strong>: Computes a composite priority score <em>S<sub>i</sub> = 0.45&middot;Urgency + 0.35&middot;Criticality + 0.20&middot;ResourceIntensity</em> for every task and classifies each into <strong>P1</strong> (weight 1.60), <strong>P2</strong> (1.25), <strong>P3</strong> (1.00), or <strong>P4</strong> (0.75), yielding an empirical <em>P<sub>1</sub>&ndash;P<sub>4</sub></em> distribution per experiment.</li>
+<li><strong>Seven-Rule Resource Filtering (<code>resource_filter.py</code>)</strong>: Enforces Available CPU, RAM, Storage, and Bandwidth sufficiency alongside Estimated Latency &le; 50 ms, Projected CPU Utilization &le; 85%, and Projected RAM Utilization &le; 90%.</li>
+<li><strong>Hierarchical Game Coordination (<code>stackelberg.py</code>, <code>nash_mfg.py</code>, <code>hierarchical_game.py</code>)</strong>: Edge servers optimize Stackelberg unit prices while follower nodes compute damped fixed-point Mean-Field Game (MFG) stationary distributions and route tasks via priority-weighted congestion potentials across four policy variants: <strong>A1: MFG only</strong>, <strong>A2: Stackelberg only</strong>, <strong>A3: MFG+Stackelberg</strong>, and <strong>Proposed</strong>.</li>
+<li><strong>Queue Execution &amp; Independent Equilibrium Auditing (<code>edge_node.py</code>, <code>metrics.py</code>)</strong>: Tasks execute against real node queue clocks (<code>next_available_time_ms</code>), and post-allocation perturbation verifiers independently compute the <strong>Final Nash Gap (&darr;)</strong> and <strong>Stackelberg Gap (&darr;)</strong>.</li>
+</ol>
+</div>
+<h2>2. Experimental Design &amp; Phase-1 Resource Filtering (27 Configurations)</h2>
 <h3>Table 1. Network Configuration and Resource Parameters</h3>
 <table class="dataframe">
   <thead>
@@ -157,221 +176,70 @@
     </tr>
   </tbody>
 </table>
-<h3>Table 2. Filtering Decisions Across Workloads (1,250, 3,000, and 5,000 Tasks)</h3>
-<h4>Network N1</h4>
+<h3>Table 2. Consolidated Seven-Rule Resource Filtering Viability Across Networks</h3>
 <table class="dataframe">
   <thead>
     <tr style="text-align: right;">
-      <th>Network</th>
       <th>Metric</th>
       <th>Eligibility rule</th>
-      <th>1,250 tasks</th>
-      <th>3,000 tasks</th>
-      <th>5,000 tasks</th>
+      <th>N1 (1,250 / 3,000 / 5,000)</th>
+      <th>N2 (1,250 / 3,000 / 5,000)</th>
+      <th>N3 (1,250 / 3,000 / 5,000)</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td>N1</td>
       <td>CPU</td>
       <td>Available CPU &gt;= task demand</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
+      <td>(100.0% viable) | (100.0% viable) | (100.0% viable)</td>
+      <td>(100.0% viable) | (100.0% viable) | (100.0% viable)</td>
+      <td>(100.0% viable) | (100.0% viable) | (100.0% viable)</td>
     </tr>
     <tr>
-      <td>N1</td>
       <td>RAM</td>
       <td>Available RAM &gt;= task demand</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
+      <td>(100.0% viable) | (100.0% viable) | (100.0% viable)</td>
+      <td>(100.0% viable) | (100.0% viable) | (100.0% viable)</td>
+      <td>(100.0% viable) | (100.0% viable) | (100.0% viable)</td>
     </tr>
     <tr>
-      <td>N1</td>
       <td>Storage</td>
       <td>Available storage &gt;= task demand</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
+      <td>(100.0% viable) | (100.0% viable) | (100.0% viable)</td>
+      <td>(100.0% viable) | (100.0% viable) | (100.0% viable)</td>
+      <td>(100.0% viable) | (100.0% viable) | (100.0% viable)</td>
     </tr>
     <tr>
-      <td>N1</td>
       <td>Bandwidth</td>
       <td>Available bandwidth &gt;= task demand</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
+      <td>(100.0% viable) | (100.0% viable) | (100.0% viable)</td>
+      <td>(100.0% viable) | (100.0% viable) | (100.0% viable)</td>
+      <td>(100.0% viable) | (100.0% viable) | (100.0% viable)</td>
     </tr>
     <tr>
-      <td>N1</td>
       <td>Latency</td>
       <td>Estimated latency &lt;= 50 ms</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
+      <td>(100.0% viable) | (100.0% viable) | (100.0% viable)</td>
+      <td>(100.0% viable) | (100.0% viable) | (100.0% viable)</td>
+      <td>(100.0% viable) | (100.0% viable) | (100.0% viable)</td>
     </tr>
     <tr>
-      <td>N1</td>
       <td>CPU utilization</td>
       <td>Projected utilization &lt;= 85%</td>
-      <td>Apply (99.2% viable)</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
+      <td>(99.2% viable) | (100.0% viable) | (100.0% viable)</td>
+      <td>(99.2% viable) | (99.4% viable) | (99.2% viable)</td>
+      <td>(99.1% viable) | (99.2% viable) | (99.2% viable)</td>
     </tr>
     <tr>
-      <td>N1</td>
       <td>RAM utilization</td>
       <td>Projected utilization &lt;= 90%</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
+      <td>(100.0% viable) | (100.0% viable) | (100.0% viable)</td>
+      <td>(100.0% viable) | (100.0% viable) | (100.0% viable)</td>
+      <td>(100.0% viable) | (100.0% viable) | (100.0% viable)</td>
     </tr>
   </tbody>
 </table>
-<h4>Network N2</h4>
-<table class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th>Network</th>
-      <th>Metric</th>
-      <th>Eligibility rule</th>
-      <th>1,250 tasks</th>
-      <th>3,000 tasks</th>
-      <th>5,000 tasks</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>N2</td>
-      <td>CPU</td>
-      <td>Available CPU &gt;= task demand</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
-    </tr>
-    <tr>
-      <td>N2</td>
-      <td>RAM</td>
-      <td>Available RAM &gt;= task demand</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
-    </tr>
-    <tr>
-      <td>N2</td>
-      <td>Storage</td>
-      <td>Available storage &gt;= task demand</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
-    </tr>
-    <tr>
-      <td>N2</td>
-      <td>Bandwidth</td>
-      <td>Available bandwidth &gt;= task demand</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
-    </tr>
-    <tr>
-      <td>N2</td>
-      <td>Latency</td>
-      <td>Estimated latency &lt;= 50 ms</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
-    </tr>
-    <tr>
-      <td>N2</td>
-      <td>CPU utilization</td>
-      <td>Projected utilization &lt;= 85%</td>
-      <td>Apply (99.2% viable)</td>
-      <td>Apply (99.4% viable)</td>
-      <td>Apply (99.2% viable)</td>
-    </tr>
-    <tr>
-      <td>N2</td>
-      <td>RAM utilization</td>
-      <td>Projected utilization &lt;= 90%</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
-    </tr>
-  </tbody>
-</table>
-<h4>Network N3</h4>
-<table class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th>Network</th>
-      <th>Metric</th>
-      <th>Eligibility rule</th>
-      <th>1,250 tasks</th>
-      <th>3,000 tasks</th>
-      <th>5,000 tasks</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>N3</td>
-      <td>CPU</td>
-      <td>Available CPU &gt;= task demand</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
-    </tr>
-    <tr>
-      <td>N3</td>
-      <td>RAM</td>
-      <td>Available RAM &gt;= task demand</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
-    </tr>
-    <tr>
-      <td>N3</td>
-      <td>Storage</td>
-      <td>Available storage &gt;= task demand</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
-    </tr>
-    <tr>
-      <td>N3</td>
-      <td>Bandwidth</td>
-      <td>Available bandwidth &gt;= task demand</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
-    </tr>
-    <tr>
-      <td>N3</td>
-      <td>Latency</td>
-      <td>Estimated latency &lt;= 50 ms</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
-    </tr>
-    <tr>
-      <td>N3</td>
-      <td>CPU utilization</td>
-      <td>Projected utilization &lt;= 85%</td>
-      <td>Apply (99.1% viable)</td>
-      <td>Apply (99.2% viable)</td>
-      <td>Apply (99.2% viable)</td>
-    </tr>
-    <tr>
-      <td>N3</td>
-      <td>RAM utilization</td>
-      <td>Projected utilization &lt;= 90%</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
-      <td>Apply (100.0% viable)</td>
-    </tr>
-  </tbody>
-</table>
-<h3>Proposed Experimental Configuration – 27 Experiments (Observed P1–P4 Distributions)</h3>
+<h3>Table 3. Phase-1 Experimental Configurations (E1–E27) with Observed P1–P4 Distributions</h3>
 <table class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -686,8 +554,8 @@
     </tr>
   </tbody>
 </table>
-<h2>Phase-2: Statistical Analysis, Equilibrium Ablation &amp; Performance Visualization</h2>
-<h3>Phase-2 Table-1: Performance Comparison Across Six Metrics (Mean &plusmn; SD)</h3>
+<h2>3. Phase-2 Overall Ablation Results &amp; Statistical Significance</h2>
+<h3>Table 4. Overall Performance Comparison Across Six Metrics (Mean &plusmn; SD)</h3>
 <table class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -715,17 +583,17 @@
     </tr>
     <tr>
       <td>Load Variance</td>
-      <td>0.19 ± 0.44</td>
-      <td>0.59 ± 1.23</td>
-      <td>0.14 ± 0.36</td>
-      <td>0.07 ± 0.18</td>
+      <td>0.186 ± 0.441</td>
+      <td>0.587 ± 1.232</td>
+      <td>0.141 ± 0.357</td>
+      <td>0.065 ± 0.176</td>
     </tr>
     <tr>
       <td>Convergence Time</td>
-      <td>78.29 ± 15.90</td>
-      <td>90.62 ± 18.16</td>
-      <td>61.87 ± 12.67</td>
-      <td>49.23 ± 10.61</td>
+      <td>77.23 ± 15.34</td>
+      <td>90.61 ± 18.16</td>
+      <td>60.98 ± 12.21</td>
+      <td>48.28 ± 10.20</td>
     </tr>
     <tr>
       <td>Throughput</td>
@@ -743,7 +611,7 @@
     </tr>
   </tbody>
 </table>
-<h3>Phase-2 Table-2: Statistical Significance (Welch Two-Sample t-test &amp; One-Way ANOVA p-values)</h3>
+<h3>Table 5. Statistical Significance Summary (Welch t-test &amp; ANOVA p-values)</h3>
 <table class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -778,10 +646,10 @@
     </tr>
     <tr>
       <td>Convergence Time</td>
-      <td>1.46e-27 (&lt;0.0001***)</td>
-      <td>2.45e-36 (&lt;0.0001***)</td>
-      <td>1.36e-10 (&lt;0.0001***)</td>
-      <td>1.22e-53 (&lt;0.0001***)</td>
+      <td>1.03e-28 (&lt;0.0001***)</td>
+      <td>2.96e-37 (&lt;0.0001***)</td>
+      <td>2.61e-11 (&lt;0.0001***)</td>
+      <td>9.87e-57 (&lt;0.0001***)</td>
     </tr>
     <tr>
       <td>Throughput</td>
@@ -799,7 +667,793 @@
     </tr>
   </tbody>
 </table>
-<h3>Nash and Stackelberg Equilibrium Ablation Applicability</h3>
+<h3>Table 6. Paired Statistical Comparisons (Proposed Minus Baseline with 95% CI &amp; Holm Correction)</h3>
+<table class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Metric</th>
+      <th>Baseline</th>
+      <th>Mean Diff</th>
+      <th>95% CI Range</th>
+      <th>p-value</th>
+      <th>Holm p</th>
+      <th>Sig (0.05)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Utility</td>
+      <td>PROPOSED_vs_A1_MFG_ONLY</td>
+      <td>-23.9002</td>
+      <td>[-25.9897, -21.8108]</td>
+      <td>0.00000</td>
+      <td>0.00000</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>Jain's Fairness</td>
+      <td>PROPOSED_vs_A1_MFG_ONLY</td>
+      <td>+0.0017</td>
+      <td>[+0.0008, +0.0026]</td>
+      <td>0.00042</td>
+      <td>0.00127</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>Load Variance</td>
+      <td>PROPOSED_vs_A1_MFG_ONLY</td>
+      <td>-0.1210</td>
+      <td>[-0.1805, -0.0616]</td>
+      <td>0.00012</td>
+      <td>0.00059</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>Convergence Time</td>
+      <td>PROPOSED_vs_A1_MFG_ONLY</td>
+      <td>-28.9497</td>
+      <td>[-30.0880, -27.8113]</td>
+      <td>0.00000</td>
+      <td>0.00000</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>Throughput</td>
+      <td>PROPOSED_vs_A1_MFG_ONLY</td>
+      <td>-1248.0588</td>
+      <td>[-1488.7516, -1007.3660]</td>
+      <td>0.00000</td>
+      <td>0.00000</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>Response Time</td>
+      <td>PROPOSED_vs_A1_MFG_ONLY</td>
+      <td>+27.7015</td>
+      <td>[+23.3229, +32.0800]</td>
+      <td>0.00000</td>
+      <td>0.00000</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>Utility</td>
+      <td>PROPOSED_vs_A2_STACKELBERG</td>
+      <td>-17.9671</td>
+      <td>[-20.9404, -14.9938]</td>
+      <td>0.00000</td>
+      <td>0.00000</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>Jain's Fairness</td>
+      <td>PROPOSED_vs_A2_STACKELBERG</td>
+      <td>+0.0077</td>
+      <td>[+0.0039, +0.0115]</td>
+      <td>0.00013</td>
+      <td>0.00059</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>Load Variance</td>
+      <td>PROPOSED_vs_A2_STACKELBERG</td>
+      <td>-0.5221</td>
+      <td>[-0.7569, -0.2873]</td>
+      <td>0.00003</td>
+      <td>0.00018</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>Convergence Time</td>
+      <td>PROPOSED_vs_A2_STACKELBERG</td>
+      <td>-42.3281</td>
+      <td>[-44.1319, -40.5243]</td>
+      <td>0.00000</td>
+      <td>0.00000</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>Throughput</td>
+      <td>PROPOSED_vs_A2_STACKELBERG</td>
+      <td>-973.1227</td>
+      <td>[-1255.1811, -691.0644]</td>
+      <td>0.00000</td>
+      <td>0.00000</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>Response Time</td>
+      <td>PROPOSED_vs_A2_STACKELBERG</td>
+      <td>+25.8166</td>
+      <td>[+20.7964, +30.8368]</td>
+      <td>0.00000</td>
+      <td>0.00000</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>Utility</td>
+      <td>PROPOSED_vs_A3_MFG_STACK</td>
+      <td>-21.3927</td>
+      <td>[-23.6016, -19.1838]</td>
+      <td>0.00000</td>
+      <td>0.00000</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>Jain's Fairness</td>
+      <td>PROPOSED_vs_A3_MFG_STACK</td>
+      <td>+0.0011</td>
+      <td>[+0.0005, +0.0017]</td>
+      <td>0.00076</td>
+      <td>0.00127</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>Load Variance</td>
+      <td>PROPOSED_vs_A3_MFG_STACK</td>
+      <td>-0.0760</td>
+      <td>[-0.1175, -0.0344]</td>
+      <td>0.00048</td>
+      <td>0.00127</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>Convergence Time</td>
+      <td>PROPOSED_vs_A3_MFG_STACK</td>
+      <td>-12.7015</td>
+      <td>[-13.1582, -12.2448]</td>
+      <td>0.00000</td>
+      <td>0.00000</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>Throughput</td>
+      <td>PROPOSED_vs_A3_MFG_STACK</td>
+      <td>-1274.5278</td>
+      <td>[-1515.3628, -1033.6929]</td>
+      <td>0.00000</td>
+      <td>0.00000</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>Response Time</td>
+      <td>PROPOSED_vs_A3_MFG_STACK</td>
+      <td>+27.1639</td>
+      <td>[+23.0322, +31.2957]</td>
+      <td>0.00000</td>
+      <td>0.00000</td>
+      <td>True</td>
+    </tr>
+  </tbody>
+</table>
+<h2>4. Condition-Level Results by Workload and Task Profile</h2>
+<h3>Part 1: Utility, Jain's Fairness &amp; Load Variance</h3>
+<table class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Load</th>
+      <th>Profile</th>
+      <th>Policy Variant</th>
+      <th>Utility (Mean ± SD)</th>
+      <th>Jain Fairness (Mean ± SD)</th>
+      <th>Load Variance (Mean ± SD)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1250</td>
+      <td>T1</td>
+      <td>A1: MFG only</td>
+      <td>69.13 ± 2.52</td>
+      <td>0.9892 ± 0.0140</td>
+      <td>0.649 ± 0.775</td>
+    </tr>
+    <tr>
+      <td>1250</td>
+      <td>T1</td>
+      <td>A2: Stackelberg only</td>
+      <td>58.97 ± 3.92</td>
+      <td>0.9710 ± 0.0334</td>
+      <td>1.758 ± 1.791</td>
+    </tr>
+    <tr>
+      <td>1250</td>
+      <td>T1</td>
+      <td>A3: MFG+Stackelberg</td>
+      <td>66.63 ± 1.41</td>
+      <td>0.9927 ± 0.0094</td>
+      <td>0.427 ± 0.502</td>
+    </tr>
+    <tr>
+      <td>1250</td>
+      <td>T1</td>
+      <td>Proposed</td>
+      <td>54.10 ± 7.38</td>
+      <td>0.9958 ± 0.0059</td>
+      <td>0.235 ± 0.307</td>
+    </tr>
+    <tr>
+      <td>1250</td>
+      <td>T2</td>
+      <td>A1: MFG only</td>
+      <td>63.03 ± 3.19</td>
+      <td>0.9929 ± 0.0094</td>
+      <td>0.496 ± 0.627</td>
+    </tr>
+    <tr>
+      <td>1250</td>
+      <td>T2</td>
+      <td>A2: Stackelberg only</td>
+      <td>53.17 ± 3.46</td>
+      <td>0.9762 ± 0.0306</td>
+      <td>1.560 ± 1.874</td>
+    </tr>
+    <tr>
+      <td>1250</td>
+      <td>T2</td>
+      <td>A3: MFG+Stackelberg</td>
+      <td>59.73 ± 1.88</td>
+      <td>0.9938 ± 0.0088</td>
+      <td>0.426 ± 0.591</td>
+    </tr>
+    <tr>
+      <td>1250</td>
+      <td>T2</td>
+      <td>Proposed</td>
+      <td>49.62 ± 6.69</td>
+      <td>0.9973 ± 0.0039</td>
+      <td>0.182 ± 0.263</td>
+    </tr>
+    <tr>
+      <td>1250</td>
+      <td>T3</td>
+      <td>A1: MFG only</td>
+      <td>56.95 ± 3.02</td>
+      <td>0.9945 ± 0.0075</td>
+      <td>0.433 ± 0.575</td>
+    </tr>
+    <tr>
+      <td>1250</td>
+      <td>T3</td>
+      <td>A2: Stackelberg only</td>
+      <td>46.92 ± 3.65</td>
+      <td>0.9798 ± 0.0258</td>
+      <td>1.443 ± 1.748</td>
+    </tr>
+    <tr>
+      <td>1250</td>
+      <td>T3</td>
+      <td>A3: MFG+Stackelberg</td>
+      <td>53.46 ± 1.78</td>
+      <td>0.9951 ± 0.0072</td>
+      <td>0.379 ± 0.549</td>
+    </tr>
+    <tr>
+      <td>1250</td>
+      <td>T3</td>
+      <td>Proposed</td>
+      <td>45.81 ± 5.76</td>
+      <td>0.9979 ± 0.0032</td>
+      <td>0.164 ± 0.244</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>T1</td>
+      <td>A1: MFG only</td>
+      <td>67.65 ± 3.90</td>
+      <td>0.9994 ± 0.0009</td>
+      <td>0.054 ± 0.082</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>T1</td>
+      <td>A2: Stackelberg only</td>
+      <td>61.80 ± 3.36</td>
+      <td>0.9972 ± 0.0042</td>
+      <td>0.259 ± 0.391</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>T1</td>
+      <td>A3: MFG+Stackelberg</td>
+      <td>64.62 ± 3.57</td>
+      <td>0.9997 ± 0.0004</td>
+      <td>0.028 ± 0.042</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>T1</td>
+      <td>Proposed</td>
+      <td>38.71 ± 7.40</td>
+      <td>1.0000 ± 0.0001</td>
+      <td>0.004 ± 0.007</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>T2</td>
+      <td>A1: MFG only</td>
+      <td>61.39 ± 4.57</td>
+      <td>0.9997 ± 0.0005</td>
+      <td>0.030 ± 0.046</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>T2</td>
+      <td>A2: Stackelberg only</td>
+      <td>55.75 ± 3.94</td>
+      <td>0.9984 ± 0.0026</td>
+      <td>0.151 ± 0.243</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>T2</td>
+      <td>A3: MFG+Stackelberg</td>
+      <td>58.50 ± 4.40</td>
+      <td>0.9999 ± 0.0001</td>
+      <td>0.008 ± 0.013</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>T2</td>
+      <td>Proposed</td>
+      <td>35.89 ± 7.33</td>
+      <td>1.0000 ± 0.0000</td>
+      <td>0.001 ± 0.002</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>T3</td>
+      <td>A1: MFG only</td>
+      <td>55.36 ± 5.27</td>
+      <td>0.9999 ± 0.0002</td>
+      <td>0.011 ± 0.017</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>T3</td>
+      <td>A2: Stackelberg only</td>
+      <td>50.56 ± 4.52</td>
+      <td>0.9990 ± 0.0015</td>
+      <td>0.094 ± 0.144</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>T3</td>
+      <td>A3: MFG+Stackelberg</td>
+      <td>52.97 ± 5.35</td>
+      <td>1.0000 ± 0.0000</td>
+      <td>0.002 ± 0.003</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>T3</td>
+      <td>Proposed</td>
+      <td>33.37 ± 7.32</td>
+      <td>1.0000 ± 0.0000</td>
+      <td>0.000 ± 0.000</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>T1</td>
+      <td>A1: MFG only</td>
+      <td>65.73 ± 3.49</td>
+      <td>1.0000 ± 0.0000</td>
+      <td>0.002 ± 0.003</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>T1</td>
+      <td>A2: Stackelberg only</td>
+      <td>63.28 ± 3.05</td>
+      <td>0.9999 ± 0.0002</td>
+      <td>0.010 ± 0.017</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>T1</td>
+      <td>A3: MFG+Stackelberg</td>
+      <td>63.98 ± 4.02</td>
+      <td>1.0000 ± 0.0000</td>
+      <td>0.000 ± 0.000</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>T1</td>
+      <td>Proposed</td>
+      <td>28.56 ± 7.05</td>
+      <td>1.0000 ± 0.0000</td>
+      <td>0.000 ± 0.000</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>T2</td>
+      <td>A1: MFG only</td>
+      <td>58.97 ± 4.89</td>
+      <td>1.0000 ± 0.0000</td>
+      <td>0.000 ± 0.000</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>T2</td>
+      <td>A2: Stackelberg only</td>
+      <td>56.68 ± 5.19</td>
+      <td>0.9999 ± 0.0002</td>
+      <td>0.007 ± 0.017</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>T2</td>
+      <td>A3: MFG+Stackelberg</td>
+      <td>57.35 ± 5.84</td>
+      <td>1.0000 ± 0.0000</td>
+      <td>0.000 ± 0.000</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>T2</td>
+      <td>Proposed</td>
+      <td>26.21 ± 7.73</td>
+      <td>1.0000 ± 0.0000</td>
+      <td>0.000 ± 0.000</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>T3</td>
+      <td>A1: MFG only</td>
+      <td>53.31 ± 5.59</td>
+      <td>1.0000 ± 0.0000</td>
+      <td>0.000 ± 0.000</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>T3</td>
+      <td>A2: Stackelberg only</td>
+      <td>51.00 ± 5.73</td>
+      <td>1.0000 ± 0.0000</td>
+      <td>0.002 ± 0.004</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>T3</td>
+      <td>A3: MFG+Stackelberg</td>
+      <td>51.73 ± 6.28</td>
+      <td>1.0000 ± 0.0000</td>
+      <td>0.000 ± 0.000</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>T3</td>
+      <td>Proposed</td>
+      <td>24.16 ± 7.89</td>
+      <td>1.0000 ± 0.0000</td>
+      <td>0.000 ± 0.000</td>
+    </tr>
+  </tbody>
+</table>
+<h3>Part 2: Convergence Time, System Throughput &amp; Response Time</h3>
+<table class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Load</th>
+      <th>Profile</th>
+      <th>Policy Variant</th>
+      <th>Convergence Time ms (Mean ± SD)</th>
+      <th>Throughput tasks/s (Mean ± SD)</th>
+      <th>Response Time ms (Mean ± SD)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1250</td>
+      <td>T1</td>
+      <td>A1: MFG only</td>
+      <td>61.25 ± 7.43</td>
+      <td>2633.29 ± 1479.16</td>
+      <td>20.61 ± 2.48</td>
+    </tr>
+    <tr>
+      <td>1250</td>
+      <td>T1</td>
+      <td>A2: Stackelberg only</td>
+      <td>73.27 ± 11.41</td>
+      <td>1994.84 ± 918.92</td>
+      <td>26.02 ± 6.75</td>
+    </tr>
+    <tr>
+      <td>1250</td>
+      <td>T1</td>
+      <td>A3: MFG+Stackelberg</td>
+      <td>48.55 ± 6.34</td>
+      <td>2825.36 ± 1705.96</td>
+      <td>19.69 ± 1.34</td>
+    </tr>
+    <tr>
+      <td>1250</td>
+      <td>T1</td>
+      <td>Proposed</td>
+      <td>37.70 ± 4.94</td>
+      <td>2308.49 ± 1650.18</td>
+      <td>26.84 ± 4.22</td>
+    </tr>
+    <tr>
+      <td>1250</td>
+      <td>T2</td>
+      <td>A1: MFG only</td>
+      <td>61.32 ± 7.36</td>
+      <td>2654.11 ± 1564.25</td>
+      <td>20.89 ± 1.89</td>
+    </tr>
+    <tr>
+      <td>1250</td>
+      <td>T2</td>
+      <td>A2: Stackelberg only</td>
+      <td>73.27 ± 11.41</td>
+      <td>2021.22 ± 952.06</td>
+      <td>26.12 ± 7.05</td>
+    </tr>
+    <tr>
+      <td>1250</td>
+      <td>T2</td>
+      <td>A3: MFG+Stackelberg</td>
+      <td>48.60 ± 6.30</td>
+      <td>2704.16 ± 1623.67</td>
+      <td>20.81 ± 1.98</td>
+    </tr>
+    <tr>
+      <td>1250</td>
+      <td>T2</td>
+      <td>Proposed</td>
+      <td>37.74 ± 4.94</td>
+      <td>2245.53 ± 1645.28</td>
+      <td>28.22 ± 5.24</td>
+    </tr>
+    <tr>
+      <td>1250</td>
+      <td>T3</td>
+      <td>A1: MFG only</td>
+      <td>61.28 ± 7.39</td>
+      <td>2583.41 ± 1555.74</td>
+      <td>21.69 ± 1.82</td>
+    </tr>
+    <tr>
+      <td>1250</td>
+      <td>T3</td>
+      <td>A2: Stackelberg only</td>
+      <td>73.28 ± 11.41</td>
+      <td>1983.38 ± 976.10</td>
+      <td>26.86 ± 6.34</td>
+    </tr>
+    <tr>
+      <td>1250</td>
+      <td>T3</td>
+      <td>A3: MFG+Stackelberg</td>
+      <td>48.71 ± 6.14</td>
+      <td>2615.88 ± 1616.12</td>
+      <td>21.85 ± 2.21</td>
+    </tr>
+    <tr>
+      <td>1250</td>
+      <td>T3</td>
+      <td>Proposed</td>
+      <td>37.75 ± 4.92</td>
+      <td>2164.99 ± 1593.35</td>
+      <td>29.55 ± 5.95</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>T1</td>
+      <td>A1: MFG only</td>
+      <td>76.64 ± 7.78</td>
+      <td>3023.04 ± 2064.55</td>
+      <td>19.34 ± 1.07</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>T1</td>
+      <td>A2: Stackelberg only</td>
+      <td>89.81 ± 11.42</td>
+      <td>2761.14 ± 1735.83</td>
+      <td>20.50 ± 1.12</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>T1</td>
+      <td>A3: MFG+Stackelberg</td>
+      <td>60.49 ± 6.68</td>
+      <td>3048.60 ± 2145.18</td>
+      <td>19.68 ± 1.93</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>T1</td>
+      <td>Proposed</td>
+      <td>47.91 ± 5.21</td>
+      <td>1484.27 ± 1152.63</td>
+      <td>44.51 ± 9.97</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>T2</td>
+      <td>A1: MFG only</td>
+      <td>76.57 ± 7.86</td>
+      <td>2923.81 ± 2048.22</td>
+      <td>20.50 ± 2.15</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>T2</td>
+      <td>A2: Stackelberg only</td>
+      <td>89.83 ± 11.43</td>
+      <td>2751.74 ± 1849.03</td>
+      <td>21.39 ± 1.95</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>T2</td>
+      <td>A3: MFG+Stackelberg</td>
+      <td>60.42 ± 6.72</td>
+      <td>2940.25 ± 2126.40</td>
+      <td>21.13 ± 3.43</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>T2</td>
+      <td>Proposed</td>
+      <td>47.75 ± 5.31</td>
+      <td>1414.70 ± 1112.01</td>
+      <td>47.62 ± 11.95</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>T3</td>
+      <td>A1: MFG only</td>
+      <td>76.45 ± 7.88</td>
+      <td>2787.70 ± 2029.46</td>
+      <td>22.61 ± 4.08</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>T3</td>
+      <td>A2: Stackelberg only</td>
+      <td>89.83 ± 11.44</td>
+      <td>2657.32 ± 1875.36</td>
+      <td>23.18 ± 3.60</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>T3</td>
+      <td>A3: MFG+Stackelberg</td>
+      <td>60.37 ± 6.75</td>
+      <td>2778.63 ± 2083.77</td>
+      <td>23.80 ± 5.94</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>T3</td>
+      <td>Proposed</td>
+      <td>47.73 ± 5.28</td>
+      <td>1360.60 ± 1091.39</td>
+      <td>50.83 ± 14.19</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>T1</td>
+      <td>A1: MFG only</td>
+      <td>93.82 ± 8.35</td>
+      <td>2958.37 ± 2048.66</td>
+      <td>19.94 ± 1.40</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>T1</td>
+      <td>A2: Stackelberg only</td>
+      <td>108.74 ± 11.44</td>
+      <td>2940.54 ± 2019.40</td>
+      <td>19.91 ± 1.12</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>T1</td>
+      <td>A3: MFG+Stackelberg</td>
+      <td>73.90 ± 7.21</td>
+      <td>2941.49 ± 2078.02</td>
+      <td>20.56 ± 2.36</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>T1</td>
+      <td>Proposed</td>
+      <td>59.40 ± 5.75</td>
+      <td>970.68 ± 746.26</td>
+      <td>67.10 ± 13.80</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>T2</td>
+      <td>A1: MFG only</td>
+      <td>93.94 ± 8.42</td>
+      <td>2800.26 ± 2029.39</td>
+      <td>22.41 ± 3.89</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>T2</td>
+      <td>A2: Stackelberg only</td>
+      <td>108.72 ± 11.43</td>
+      <td>2786.93 ± 1993.76</td>
+      <td>22.04 ± 3.06</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>T2</td>
+      <td>A3: MFG+Stackelberg</td>
+      <td>73.93 ± 7.30</td>
+      <td>2777.60 ± 2064.44</td>
+      <td>23.66 ± 5.76</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>T2</td>
+      <td>Proposed</td>
+      <td>59.27 ± 5.56</td>
+      <td>935.20 ± 735.99</td>
+      <td>71.89 ± 17.64</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>T3</td>
+      <td>A1: MFG only</td>
+      <td>93.80 ± 8.42</td>
+      <td>2657.72 ± 1977.98</td>
+      <td>25.04 ± 6.91</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>T3</td>
+      <td>A2: Stackelberg only</td>
+      <td>108.72 ± 11.42</td>
+      <td>2650.17 ± 1930.93</td>
+      <td>23.99 ± 5.05</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>T3</td>
+      <td>A3: MFG+Stackelberg</td>
+      <td>73.86 ± 7.20</td>
+      <td>2627.96 ± 2005.25</td>
+      <td>26.68 ± 9.18</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>T3</td>
+      <td>Proposed</td>
+      <td>59.26 ± 5.66</td>
+      <td>904.72 ± 720.79</td>
+      <td>75.79 ± 20.51</td>
+    </tr>
+  </tbody>
+</table>
+<h2>5. Equilibrium Ablation &amp; Load-Wise Diagnostics</h2>
+<h3>Table 7. Nash and Stackelberg Equilibrium Applicability Structure</h3>
 <table class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -836,7 +1490,7 @@
     </tr>
   </tbody>
 </table>
-<h3>Phase-2 Table-3: Final Nash Gap and Stackelberg Gap (Mean &plusmn; SD)</h3>
+<h3>Table 8. Overall Equilibrium Gap Comparison (Mean &plusmn; SD)</h3>
 <table class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -864,7 +1518,203 @@
     </tr>
   </tbody>
 </table>
-<h2>Performance Figures (Subplots: (a) Network-1, (b) Network-2, (c) Network-3)</h2>
+<h3>Table 9. Load-Wise Nash Equilibrium Diagnostics</h3>
+<table class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Load</th>
+      <th>Policy Variant</th>
+      <th>Runs</th>
+      <th>Final Nash Gap ↓ (Mean ± SD)</th>
+      <th>Unilateral Dev. Margin (Mean ± SD)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1250</td>
+      <td>A1: MFG only</td>
+      <td>27</td>
+      <td>0.01299 ± 0.00633</td>
+      <td>+0.00604 ± 0.00538</td>
+    </tr>
+    <tr>
+      <td>1250</td>
+      <td>A2: Stackelberg only</td>
+      <td>27</td>
+      <td>N/A</td>
+      <td>N/A</td>
+    </tr>
+    <tr>
+      <td>1250</td>
+      <td>A3: MFG+Stackelberg</td>
+      <td>27</td>
+      <td>0.00662 ± 0.00336</td>
+      <td>+0.00062 ± 0.00286</td>
+    </tr>
+    <tr>
+      <td>1250</td>
+      <td>Proposed</td>
+      <td>27</td>
+      <td>0.00228 ± 0.00115</td>
+      <td>-0.00306 ± 0.00097</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>A1: MFG only</td>
+      <td>27</td>
+      <td>0.00794 ± 0.00240</td>
+      <td>+0.00175 ± 0.00204</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>A2: Stackelberg only</td>
+      <td>27</td>
+      <td>N/A</td>
+      <td>N/A</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>A3: MFG+Stackelberg</td>
+      <td>27</td>
+      <td>0.00372 ± 0.00093</td>
+      <td>-0.00184 ± 0.00079</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>Proposed</td>
+      <td>27</td>
+      <td>0.00135 ± 0.00019</td>
+      <td>-0.00385 ± 0.00016</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>A1: MFG only</td>
+      <td>27</td>
+      <td>0.00637 ± 0.00036</td>
+      <td>+0.00042 ± 0.00031</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>A2: Stackelberg only</td>
+      <td>27</td>
+      <td>N/A</td>
+      <td>N/A</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>A3: MFG+Stackelberg</td>
+      <td>27</td>
+      <td>0.00320 ± 0.00022</td>
+      <td>-0.00228 ± 0.00019</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>Proposed</td>
+      <td>27</td>
+      <td>0.00125 ± 0.00008</td>
+      <td>-0.00394 ± 0.00007</td>
+    </tr>
+  </tbody>
+</table>
+<h3>Table 10. Load-Wise Stackelberg Equilibrium Diagnostics</h3>
+<table class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Load</th>
+      <th>Policy Variant</th>
+      <th>Runs</th>
+      <th>Stackelberg Gap ↓ (Mean ± SD)</th>
+      <th>Leader Optimality Margin (Mean ± SD)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1250</td>
+      <td>A1: MFG only</td>
+      <td>27</td>
+      <td>N/A</td>
+      <td>N/A</td>
+    </tr>
+    <tr>
+      <td>1250</td>
+      <td>A2: Stackelberg only</td>
+      <td>27</td>
+      <td>0.03987 ± 0.01906</td>
+      <td>+0.00050 ± 0.01239</td>
+    </tr>
+    <tr>
+      <td>1250</td>
+      <td>A3: MFG+Stackelberg</td>
+      <td>27</td>
+      <td>0.02624 ± 0.01268</td>
+      <td>+0.00050 ± 0.00824</td>
+    </tr>
+    <tr>
+      <td>1250</td>
+      <td>Proposed</td>
+      <td>27</td>
+      <td>0.00927 ± 0.00612</td>
+      <td>+0.00197 ± 0.00398</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>A1: MFG only</td>
+      <td>27</td>
+      <td>N/A</td>
+      <td>N/A</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>A2: Stackelberg only</td>
+      <td>27</td>
+      <td>0.03163 ± 0.02103</td>
+      <td>+0.00050 ± 0.01367</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>A3: MFG+Stackelberg</td>
+      <td>27</td>
+      <td>0.01786 ± 0.01261</td>
+      <td>+0.00050 ± 0.00819</td>
+    </tr>
+    <tr>
+      <td>3000</td>
+      <td>Proposed</td>
+      <td>27</td>
+      <td>0.00418 ± 0.00397</td>
+      <td>+0.00528 ± 0.00258</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>A1: MFG only</td>
+      <td>27</td>
+      <td>N/A</td>
+      <td>N/A</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>A2: Stackelberg only</td>
+      <td>27</td>
+      <td>0.01823 ± 0.00260</td>
+      <td>+0.00050 ± 0.00169</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>A3: MFG+Stackelberg</td>
+      <td>27</td>
+      <td>0.00983 ± 0.00145</td>
+      <td>+0.00161 ± 0.00094</td>
+    </tr>
+    <tr>
+      <td>5000</td>
+      <td>Proposed</td>
+      <td>27</td>
+      <td>0.00187 ± 0.00137</td>
+      <td>+0.00679 ± 0.00089</td>
+    </tr>
+  </tbody>
+</table>
+<h2>6. Multi-Network Performance Figures (Subplots: (a) Network-1, (b) Network-2, (c) Network-3)</h2>
 <div class='figure-box'>
 <h3>Fig. 1: Utility Value vs. Workload</h3>
 <img src='results/figures/fig1_utility.png' alt='Fig. 1: Utility Value vs. Workload'>
@@ -888,6 +1738,15 @@
 <div class='figure-box'>
 <h3>Fig. 6: Response Time vs. Workload</h3>
 <img src='results/figures/fig6_response_time.png' alt='Fig. 6: Response Time vs. Workload'>
+</div>
+<h2>7. Methodological Notes &amp; Interpretation Cautions</h2>
+<div class='card'>
+<ul>
+<li><strong>Pooled vs. Condition-Specific Means</strong>: Overall summary tables combine three network sizes, three load levels, and three priority profiles. Condition-level tables should be interpreted alongside pooled results.</li>
+<li><strong>Matched Environmental Seeds</strong>: Within each replication, all four policy variants observe the exact same task batch and initial node capacities.</li>
+<li><strong>Utilization-Based Fairness</strong>: Jain's Fairness and Load Variance measure composite post-allocation hardware utilization (65% CPU + 35% RAM) across edge nodes.</li>
+<li><strong>Independent Equilibrium Verification</strong>: Final Nash Gap and Stackelberg Gap are evaluated by post-allocation perturbation audits, leaving inapplicable solver components as <code>N/A</code>.</li>
+</ul>
 </div>
 </body>
 </html>
