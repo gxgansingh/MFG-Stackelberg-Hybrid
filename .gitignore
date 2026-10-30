@@ -20,12 +20,9 @@ ENV/
 .coverage
 htmlcov/
 
-# Generated experiment results, CSVs, and figures
+# Generated experiment results and raw CSV/PNG artifacts
 results/
 outputs/
-*.csv
-*.png
-*.pdf
 
 # IDE and OS files
 .vscode/
