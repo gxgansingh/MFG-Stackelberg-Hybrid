@@ -111,7 +111,7 @@ Values in Table 4 represent Mean $\pm$ Sample Standard Deviation across all repl
 | Utility | 61.28 ± 6.60 | 55.35 ± 6.51 | 58.77 ± 6.53 | 37.38 ± 12.15 |
 | Jain's Fairness | 0.9973 ± 0.0070 | 0.9913 ± 0.0201 | 0.9979 ± 0.0055 | 0.9990 ± 0.0029 |
 | Load Variance | 0.186 ± 0.441 | 0.587 ± 1.232 | 0.141 ± 0.357 | 0.065 ± 0.176 |
-| Convergence Time | 77.23 ± 15.34 | 90.61 ± 18.16 | 60.98 ± 12.21 | 48.28 ± 10.20 |
+| Convergence Time | 85.83 ± 18.30 | 90.73 ± 18.15 | 67.99 ± 14.56 | 55.94 ± 13.33 |
 | Throughput | 2780.19 ± 1791.30 | 2505.25 ± 1605.97 | 2806.66 ± 1855.32 | 1532.13 ± 1276.48 |
 | Response Time | 21.45 ± 3.57 | 23.33 ± 4.99 | 21.99 ± 4.82 | 49.15 ± 21.69 |
 
@@ -122,7 +122,7 @@ Values in Table 4 represent Mean $\pm$ Sample Standard Deviation across all repl
 | Utility | 7.14e-31 (<0.0001***) | 9.27e-22 (<0.0001***) | 4.29e-27 (<0.0001***) | 3.45e-57 (<0.0001***) |
 | Jain's Fairness | 0.0457* | 0.0010*** | 0.1228 (ns) | 3.99e-05 (<0.0001***) |
 | Load Variance | 0.0239* | 0.0003*** | 0.0887 (ns) | 5.36e-06 (<0.0001***) |
-| Convergence Time | 1.03e-28 (<0.0001***) | 2.96e-37 (<0.0001***) | 2.61e-11 (<0.0001***) | 9.87e-57 (<0.0001***) |
+| Convergence Time | 3.16e-23 (<0.0001***) | 1.41e-28 (<0.0001***) | 1.52e-07 (<0.0001***) | 1.66e-38 (<0.0001***) |
 | Throughput | 1.02e-06 (<0.0001***) | 3.44e-05 (<0.0001***) | 1.10e-06 (<0.0001***) | 1.04e-06 (<0.0001***) |
 | Response Time | 1.20e-18 (<0.0001***) | 4.26e-17 (<0.0001***) | 3.27e-18 (<0.0001***) | 3.65e-49 (<0.0001***) |
 
@@ -135,19 +135,19 @@ Reported differences represent `Proposed` minus each baseline across matched con
 | Utility | PROPOSED_vs_A1_MFG_ONLY | -23.9002 | [-25.9897, -21.8108] | 0.00000 | 0.00000 | True |
 | Jain's Fairness | PROPOSED_vs_A1_MFG_ONLY | +0.0017 | [+0.0008, +0.0026] | 0.00042 | 0.00127 | True |
 | Load Variance | PROPOSED_vs_A1_MFG_ONLY | -0.1210 | [-0.1805, -0.0616] | 0.00012 | 0.00059 | True |
-| Convergence Time | PROPOSED_vs_A1_MFG_ONLY | -28.9497 | [-30.0880, -27.8113] | 0.00000 | 0.00000 | True |
+| Convergence Time | PROPOSED_vs_A1_MFG_ONLY | -29.8986 | [-31.1482, -28.6489] | 0.00000 | 0.00000 | True |
 | Throughput | PROPOSED_vs_A1_MFG_ONLY | -1248.0588 | [-1488.7516, -1007.3660] | 0.00000 | 0.00000 | True |
 | Response Time | PROPOSED_vs_A1_MFG_ONLY | +27.7015 | [+23.3229, +32.0800] | 0.00000 | 0.00000 | True |
 | Utility | PROPOSED_vs_A2_STACKELBERG | -17.9671 | [-20.9404, -14.9938] | 0.00000 | 0.00000 | True |
 | Jain's Fairness | PROPOSED_vs_A2_STACKELBERG | +0.0077 | [+0.0039, +0.0115] | 0.00013 | 0.00059 | True |
 | Load Variance | PROPOSED_vs_A2_STACKELBERG | -0.5221 | [-0.7569, -0.2873] | 0.00003 | 0.00018 | True |
-| Convergence Time | PROPOSED_vs_A2_STACKELBERG | -42.3281 | [-44.1319, -40.5243] | 0.00000 | 0.00000 | True |
+| Convergence Time | PROPOSED_vs_A2_STACKELBERG | -34.7935 | [-37.2160, -32.3711] | 0.00000 | 0.00000 | True |
 | Throughput | PROPOSED_vs_A2_STACKELBERG | -973.1227 | [-1255.1811, -691.0644] | 0.00000 | 0.00000 | True |
 | Response Time | PROPOSED_vs_A2_STACKELBERG | +25.8166 | [+20.7964, +30.8368] | 0.00000 | 0.00000 | True |
 | Utility | PROPOSED_vs_A3_MFG_STACK | -21.3927 | [-23.6016, -19.1838] | 0.00000 | 0.00000 | True |
 | Jain's Fairness | PROPOSED_vs_A3_MFG_STACK | +0.0011 | [+0.0005, +0.0017] | 0.00076 | 0.00127 | True |
 | Load Variance | PROPOSED_vs_A3_MFG_STACK | -0.0760 | [-0.1175, -0.0344] | 0.00048 | 0.00127 | True |
-| Convergence Time | PROPOSED_vs_A3_MFG_STACK | -12.7015 | [-13.1582, -12.2448] | 0.00000 | 0.00000 | True |
+| Convergence Time | PROPOSED_vs_A3_MFG_STACK | -12.0570 | [-12.6719, -11.4420] | 0.00000 | 0.00000 | True |
 | Throughput | PROPOSED_vs_A3_MFG_STACK | -1274.5278 | [-1515.3628, -1033.6929] | 0.00000 | 0.00000 | True |
 | Response Time | PROPOSED_vs_A3_MFG_STACK | +27.1639 | [+23.0322, +31.2957] | 0.00000 | 0.00000 | True |
 
@@ -200,42 +200,42 @@ Reported differences represent `Proposed` minus each baseline across matched con
 
 | Load | Profile | Policy Variant | Convergence Time ms (Mean ± SD) | Throughput tasks/s (Mean ± SD) | Response Time ms (Mean ± SD) |
 | --- | --- | --- | --- | --- | --- |
-| 1250 | T1 | A1: MFG only | 61.25 ± 7.43 | 2633.29 ± 1479.16 | 20.61 ± 2.48 |
-| 1250 | T1 | A2: Stackelberg only | 73.27 ± 11.41 | 1994.84 ± 918.92 | 26.02 ± 6.75 |
-| 1250 | T1 | A3: MFG+Stackelberg | 48.55 ± 6.34 | 2825.36 ± 1705.96 | 19.69 ± 1.34 |
-| 1250 | T1 | Proposed | 37.70 ± 4.94 | 2308.49 ± 1650.18 | 26.84 ± 4.22 |
-| 1250 | T2 | A1: MFG only | 61.32 ± 7.36 | 2654.11 ± 1564.25 | 20.89 ± 1.89 |
-| 1250 | T2 | A2: Stackelberg only | 73.27 ± 11.41 | 2021.22 ± 952.06 | 26.12 ± 7.05 |
-| 1250 | T2 | A3: MFG+Stackelberg | 48.60 ± 6.30 | 2704.16 ± 1623.67 | 20.81 ± 1.98 |
-| 1250 | T2 | Proposed | 37.74 ± 4.94 | 2245.53 ± 1645.28 | 28.22 ± 5.24 |
-| 1250 | T3 | A1: MFG only | 61.28 ± 7.39 | 2583.41 ± 1555.74 | 21.69 ± 1.82 |
-| 1250 | T3 | A2: Stackelberg only | 73.28 ± 11.41 | 1983.38 ± 976.10 | 26.86 ± 6.34 |
-| 1250 | T3 | A3: MFG+Stackelberg | 48.71 ± 6.14 | 2615.88 ± 1616.12 | 21.85 ± 2.21 |
-| 1250 | T3 | Proposed | 37.75 ± 4.92 | 2164.99 ± 1593.35 | 29.55 ± 5.95 |
-| 3000 | T1 | A1: MFG only | 76.64 ± 7.78 | 3023.04 ± 2064.55 | 19.34 ± 1.07 |
-| 3000 | T1 | A2: Stackelberg only | 89.81 ± 11.42 | 2761.14 ± 1735.83 | 20.50 ± 1.12 |
-| 3000 | T1 | A3: MFG+Stackelberg | 60.49 ± 6.68 | 3048.60 ± 2145.18 | 19.68 ± 1.93 |
-| 3000 | T1 | Proposed | 47.91 ± 5.21 | 1484.27 ± 1152.63 | 44.51 ± 9.97 |
-| 3000 | T2 | A1: MFG only | 76.57 ± 7.86 | 2923.81 ± 2048.22 | 20.50 ± 2.15 |
-| 3000 | T2 | A2: Stackelberg only | 89.83 ± 11.43 | 2751.74 ± 1849.03 | 21.39 ± 1.95 |
-| 3000 | T2 | A3: MFG+Stackelberg | 60.42 ± 6.72 | 2940.25 ± 2126.40 | 21.13 ± 3.43 |
-| 3000 | T2 | Proposed | 47.75 ± 5.31 | 1414.70 ± 1112.01 | 47.62 ± 11.95 |
-| 3000 | T3 | A1: MFG only | 76.45 ± 7.88 | 2787.70 ± 2029.46 | 22.61 ± 4.08 |
-| 3000 | T3 | A2: Stackelberg only | 89.83 ± 11.44 | 2657.32 ± 1875.36 | 23.18 ± 3.60 |
-| 3000 | T3 | A3: MFG+Stackelberg | 60.37 ± 6.75 | 2778.63 ± 2083.77 | 23.80 ± 5.94 |
-| 3000 | T3 | Proposed | 47.73 ± 5.28 | 1360.60 ± 1091.39 | 50.83 ± 14.19 |
-| 5000 | T1 | A1: MFG only | 93.82 ± 8.35 | 2958.37 ± 2048.66 | 19.94 ± 1.40 |
-| 5000 | T1 | A2: Stackelberg only | 108.74 ± 11.44 | 2940.54 ± 2019.40 | 19.91 ± 1.12 |
-| 5000 | T1 | A3: MFG+Stackelberg | 73.90 ± 7.21 | 2941.49 ± 2078.02 | 20.56 ± 2.36 |
-| 5000 | T1 | Proposed | 59.40 ± 5.75 | 970.68 ± 746.26 | 67.10 ± 13.80 |
-| 5000 | T2 | A1: MFG only | 93.94 ± 8.42 | 2800.26 ± 2029.39 | 22.41 ± 3.89 |
-| 5000 | T2 | A2: Stackelberg only | 108.72 ± 11.43 | 2786.93 ± 1993.76 | 22.04 ± 3.06 |
-| 5000 | T2 | A3: MFG+Stackelberg | 73.93 ± 7.30 | 2777.60 ± 2064.44 | 23.66 ± 5.76 |
-| 5000 | T2 | Proposed | 59.27 ± 5.56 | 935.20 ± 735.99 | 71.89 ± 17.64 |
-| 5000 | T3 | A1: MFG only | 93.80 ± 8.42 | 2657.72 ± 1977.98 | 25.04 ± 6.91 |
-| 5000 | T3 | A2: Stackelberg only | 108.72 ± 11.42 | 2650.17 ± 1930.93 | 23.99 ± 5.05 |
-| 5000 | T3 | A3: MFG+Stackelberg | 73.86 ± 7.20 | 2627.96 ± 2005.25 | 26.68 ± 9.18 |
-| 5000 | T3 | Proposed | 59.26 ± 5.66 | 904.72 ± 720.79 | 75.79 ± 20.51 |
+| 1250 | T1 | A1: MFG only | 65.22 ± 8.94 | 2633.29 ± 1479.16 | 20.61 ± 2.48 |
+| 1250 | T1 | A2: Stackelberg only | 73.41 ± 11.50 | 1994.84 ± 918.92 | 26.02 ± 6.75 |
+| 1250 | T1 | A3: MFG+Stackelberg | 52.51 ± 8.87 | 2825.36 ± 1705.96 | 19.69 ± 1.34 |
+| 1250 | T1 | Proposed | 41.47 ± 6.55 | 2308.49 ± 1650.18 | 26.84 ± 4.22 |
+| 1250 | T2 | A1: MFG only | 66.17 ± 10.90 | 2654.11 ± 1564.25 | 20.89 ± 1.89 |
+| 1250 | T2 | A2: Stackelberg only | 73.40 ± 11.52 | 2021.22 ± 952.06 | 26.12 ± 7.05 |
+| 1250 | T2 | A3: MFG+Stackelberg | 52.71 ± 9.27 | 2704.16 ± 1623.67 | 20.81 ± 1.98 |
+| 1250 | T2 | Proposed | 41.36 ± 6.48 | 2245.53 ± 1645.28 | 28.22 ± 5.24 |
+| 1250 | T3 | A1: MFG only | 66.41 ± 9.12 | 2583.41 ± 1555.74 | 21.69 ± 1.82 |
+| 1250 | T3 | A2: Stackelberg only | 73.43 ± 11.51 | 1983.38 ± 976.10 | 26.86 ± 6.34 |
+| 1250 | T3 | A3: MFG+Stackelberg | 52.04 ± 6.93 | 2615.88 ± 1616.12 | 21.85 ± 2.21 |
+| 1250 | T3 | Proposed | 41.36 ± 5.62 | 2164.99 ± 1593.35 | 29.55 ± 5.95 |
+| 3000 | T1 | A1: MFG only | 85.20 ± 4.55 | 3023.04 ± 2064.55 | 19.34 ± 1.07 |
+| 3000 | T1 | A2: Stackelberg only | 89.94 ± 11.38 | 2761.14 ± 1735.83 | 20.50 ± 1.12 |
+| 3000 | T1 | A3: MFG+Stackelberg | 67.32 ± 3.96 | 3048.60 ± 2145.18 | 19.68 ± 1.93 |
+| 3000 | T1 | Proposed | 55.79 ± 3.35 | 1484.27 ± 1152.63 | 44.51 ± 9.97 |
+| 3000 | T2 | A1: MFG only | 85.03 ± 4.58 | 2923.81 ± 2048.22 | 20.50 ± 2.15 |
+| 3000 | T2 | A2: Stackelberg only | 89.92 ± 11.36 | 2751.74 ± 1849.03 | 21.39 ± 1.95 |
+| 3000 | T2 | A3: MFG+Stackelberg | 67.43 ± 3.97 | 2940.25 ± 2126.40 | 21.13 ± 3.43 |
+| 3000 | T2 | Proposed | 55.94 ± 3.22 | 1414.70 ± 1112.01 | 47.62 ± 11.95 |
+| 3000 | T3 | A1: MFG only | 85.18 ± 4.62 | 2787.70 ± 2029.46 | 22.61 ± 4.08 |
+| 3000 | T3 | A2: Stackelberg only | 89.93 ± 11.37 | 2657.32 ± 1875.36 | 23.18 ± 3.60 |
+| 3000 | T3 | A3: MFG+Stackelberg | 67.40 ± 3.91 | 2778.63 ± 2083.77 | 23.80 ± 5.94 |
+| 3000 | T3 | Proposed | 55.93 ± 3.36 | 1360.60 ± 1091.39 | 50.83 ± 14.19 |
+| 5000 | T1 | A1: MFG only | 107.60 ± 5.90 | 2958.37 ± 2048.66 | 19.94 ± 1.40 |
+| 5000 | T1 | A2: Stackelberg only | 108.87 ± 11.35 | 2940.54 ± 2019.40 | 19.91 ± 1.12 |
+| 5000 | T1 | A3: MFG+Stackelberg | 85.31 ± 4.94 | 2941.49 ± 2078.02 | 20.56 ± 2.36 |
+| 5000 | T1 | Proposed | 72.34 ± 5.84 | 970.68 ± 746.26 | 67.10 ± 13.80 |
+| 5000 | T2 | A1: MFG only | 106.09 ± 9.92 | 2800.26 ± 2029.39 | 22.41 ± 3.89 |
+| 5000 | T2 | A2: Stackelberg only | 108.83 ± 11.38 | 2786.93 ± 1993.76 | 22.04 ± 3.06 |
+| 5000 | T2 | A3: MFG+Stackelberg | 83.60 ± 8.07 | 2777.60 ± 2064.44 | 23.66 ± 5.76 |
+| 5000 | T2 | Proposed | 69.83 ± 8.14 | 935.20 ± 735.99 | 71.89 ± 17.64 |
+| 5000 | T3 | A1: MFG only | 105.60 ± 9.76 | 2657.72 ± 1977.98 | 25.04 ± 6.91 |
+| 5000 | T3 | A2: Stackelberg only | 108.85 ± 11.37 | 2650.17 ± 1930.93 | 23.99 ± 5.05 |
+| 5000 | T3 | A3: MFG+Stackelberg | 83.62 ± 8.12 | 2627.96 ± 2005.25 | 26.68 ± 9.18 |
+| 5000 | T3 | Proposed | 69.40 ± 9.50 | 904.72 ± 720.79 | 75.79 ± 20.51 |
 
 ---
 
@@ -324,4 +324,4 @@ Each figure presents three side-by-side subplots corresponding to **(a) Network-
 - **Pooled vs. Condition-Specific Means**: Overall summary tables aggregate across three network scales (`N1`, `N2`, `N3`), three workload intensities (`1,250`, `3,000`, `5,000`), and three priority profiles (`T1`, `T2`, `T3`). Condition-level breakdown tables should be consulted alongside pooled averages when evaluating scale-specific behavior.
 - **Paired Experimental Control**: Within every replication, all four policy variants (`A1`, `A2`, `A3`, `Proposed`) receive the exact same generated task batch and initial node resource state initialized from a shared seed, ensuring that observed differences arise strictly from the coordination mechanism.
 - **Jain's Fairness & Load Variance**: Both metrics are evaluated over post-allocation composite node resource utilization ($65\%$ CPU utilization $+ 35\%$ RAM utilization), reflecting actual hardware balance rather than raw task counts.
-- **Independent Equilibrium Auditing**: The reported **Final Nash Gap ($\downarrow$)** and **Stackelberg Gap ($\downarrow$)** are computed by independent post-allocation perturbation verifiers rather than solver internal stopping residuals.
+- **Independent Equilibrium Auditing**: Final Nash Gap and Stackelberg Gap are evaluated by independent post-allocation perturbation audits. Because A1 (MFG only) has no Stackelberg leader and A2 (Stackelberg only) has no MFG follower, each single-game baseline is evaluated strictly on its active equilibrium measure.
