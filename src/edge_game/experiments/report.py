@@ -265,7 +265,7 @@ def generate_markdown_and_html_reports(
             "- **Pooled vs. Condition-Specific Means**: Overall summary tables aggregate across three network scales (`N1`, `N2`, `N3`), three workload intensities (`1,250`, `3,000`, `5,000`), and three priority profiles (`T1`, `T2`, `T3`). Condition-level breakdown tables should be consulted alongside pooled averages when evaluating scale-specific behavior.",
             "- **Paired Experimental Control**: Within every replication, all four policy variants (`A1`, `A2`, `A3`, `Proposed`) receive the exact same generated task batch and initial node resource state initialized from a shared seed, ensuring that observed differences arise strictly from the coordination mechanism.",
             "- **Jain's Fairness & Load Variance**: Both metrics are evaluated over post-allocation composite node resource utilization ($65\\%$ CPU utilization $+ 35\\%$ RAM utilization), reflecting actual hardware balance rather than raw task counts.",
-            "- **Independent Equilibrium Auditing**: The reported **Final Nash Gap ($\\downarrow$)** and **Stackelberg Gap ($\\downarrow$)** are computed by independent post-allocation perturbation verifiers rather than solver internal stopping residuals.",
+            "- **Independent Equilibrium Auditing**: Final Nash Gap and Stackelberg Gap are evaluated by independent post-allocation perturbation audits. Because A1 (MFG only) has no Stackelberg leader and A2 (Stackelberg only) has no MFG follower, each single-game baseline is evaluated strictly on its active equilibrium measure.",
         ]
     )
 
@@ -440,7 +440,7 @@ def generate_markdown_and_html_reports(
             "<li><strong>Pooled vs. Condition-Specific Means</strong>: Overall summary tables combine three network sizes, three load levels, and three priority profiles. Condition-level tables should be interpreted alongside pooled results.</li>",
             "<li><strong>Matched Environmental Seeds</strong>: Within each replication, all four policy variants observe the exact same task batch and initial node capacities.</li>",
             "<li><strong>Utilization-Based Fairness</strong>: Jain's Fairness and Load Variance measure composite post-allocation hardware utilization (65% CPU + 35% RAM) across edge nodes.</li>",
-            "<li><strong>Independent Equilibrium Verification</strong>: Final Nash Gap and Stackelberg Gap are evaluated by post-allocation perturbation audits, leaving inapplicable solver components as <code>N/A</code>.</li>",
+            "<li><strong>Independent Equilibrium Verification</strong>: Final Nash Gap and Stackelberg Gap are evaluated by independent post-allocation perturbation audits. Because A1 (MFG only) has no Stackelberg leader and A2 (Stackelberg only) has no MFG follower, each single-game baseline is evaluated strictly on its active equilibrium measure.</li>",
             "</ul>",
             "</div>",
             "</body>",
